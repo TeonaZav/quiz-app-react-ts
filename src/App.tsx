@@ -5,6 +5,7 @@ import bubbleImg from "./assets/bubble.png";
 import "../index.css";
 import SetQuestionQty from "./features/SetQuestionQty";
 import SetQuestionCategory from "./features/SetQuestionCategory";
+import SetQuestionDifficulty from "./features/SetQuestionDifficulty";
 import { IFetchQuizParams, QuizDifficulty, QuizType } from "./types/quiz-types";
 import { QuizAPI } from "./api/quiz-api";
 import { IQuizCategory } from "./types/quiz-types";
@@ -67,6 +68,18 @@ function App() {
               setStep(Step.SetQuestionDifficulty);
             }}
             categories={categories}
+          />
+        );
+      case Step.SetQuestionDifficulty:
+        return (
+          <SetQuestionDifficulty
+            onClickNext={(difficulty: QuizDifficulty) => {
+              setQuizParams({
+                ...quizParams,
+                difficulty: difficulty,
+              });
+              setStep(Step.Play);
+            }}
           />
         );
 
