@@ -29,7 +29,7 @@ function App() {
 
   async function fetchCategories() {
     const result = await QuizAPI.fetchCategories();
-    setCategories(result);
+    setCategories([{ id: -1, name: "Mixed" }, ...result]);
   }
 
   useEffect(() => {
@@ -57,7 +57,18 @@ function App() {
           />
         );
       case Step.SetQuestionCategory:
-        return <SetQuestionCategory categories={categories} />;
+        return (
+          <SetQuestionCategory
+            onClickNext={(category: string) => {
+              setQuizParams({
+                ...quizParams,
+                category: category === "-1" ? "" : category,
+              });
+              setStep(Step.SetQuestionDifficulty);
+            }}
+            categories={categories}
+          />
+        );
 
       default:
         return null;

@@ -12,6 +12,7 @@ import { ArrowForwardIcon } from "@chakra-ui/icons";
 
 export default function SetQuestionCategory(p: {
   categories: IQuizCategory[];
+  onClickNext: (categoryId: string) => void;
 }) {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>(
     p.categories[0].id.toString()
@@ -41,7 +42,7 @@ export default function SetQuestionCategory(p: {
         </SimpleGrid>
       </RadioGroup>
       <Button
-        onClick={() => ""}
+        onClick={() => p.onClickNext(setSelectedCategoryId.toString())}
         position={"absolute"}
         top={"80%"}
         right={"10%"}
