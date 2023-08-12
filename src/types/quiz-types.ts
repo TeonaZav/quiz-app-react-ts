@@ -17,3 +17,11 @@ export enum QuizType {
   Multiple = "multiple",
   Boolean = "boolean",
 }
+
+export interface IQuizCategory {
+  id: number;
+  name: string;
+}
+export interface IFetchQuizCategories {
+  trivia_categories: IQuizCategory[];
+}

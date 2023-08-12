@@ -4,6 +4,7 @@ import logoImg from "./assets/logo.png";
 import bubbleImg from "./assets/bubble.png";
 import "../index.css";
 import SetQuestionQty from "./features/SetQuestionQty";
+import SetQuestionCategory from "./features/SetQuestionCategory";
 import { IFetchQuizParams, QuizDifficulty, QuizType } from "./types/quiz-types";
 
 enum Step {
@@ -43,6 +44,8 @@ function App() {
             defaultValue={10}
           />
         );
+      case Step.SetQuestionCategory:
+        return <SetQuestionCategory />;
 
       default:
         return null;
