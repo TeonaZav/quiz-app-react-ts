@@ -3,11 +3,13 @@ import Lottie from "lottie-react";
 import { IQuizItem } from "../types/quiz-types";
 import {
   Flex,
+  HStack,
   Heading,
   Radio,
   RadioGroup,
   SimpleGrid,
   Text,
+  Box,
 } from "@chakra-ui/react";
 import valid from "../assets/lottie/valid.json";
 import invalid from "../assets/lottie/invalid.json";
@@ -16,6 +18,7 @@ export default function PlayQuiz(p: { quizData: IQuizItem[] }) {
   const [currentQuizItemIndex, setCurrentQuizItemIndex] = useState<number>(0);
   const currentItem: IQuizItem = p.quizData[currentQuizItemIndex];
   const [availableAnswers, setAvailableAnswers] = useState<string[]>([]);
+  const [history, setHistory] = useState<boolean[]>([]);
 
   const [answer, setAnswer] = useState<string>();
   const [questionStatus, setQuestionStatus] = useState<
@@ -32,13 +35,38 @@ export default function PlayQuiz(p: { quizData: IQuizItem[] }) {
 
   useEffect(() => {
     if (answer) {
-      if (isValidAnswer(answer)) {
+      const isValid = isValidAnswer(answer);
+      if (isValid) {
         setQuestionStatus("valid");
       } else {
         setQuestionStatus("invalid");
       }
+      setHistory([...history, isValid]);
     }
   }, [answer]);
+
+  const renderProgressBar = () => {
+    return (
+      <HStack>
+        {p.quizData.map((item, i) => {
+          return (
+            <Box
+              key={i}
+              h={3}
+              w={25}
+              backgroundColor={
+                i >= currentQuizItemIndex
+                  ? "gray.200"
+                  : history[i]
+                  ? "green.300"
+                  : "red.300"
+              }
+            ></Box>
+          );
+        })}
+      </HStack>
+    );
+  };
 
   const isValidAnswer = (answer: string): boolean => {
     return answer === currentItem.correct_answer;
@@ -60,6 +88,7 @@ export default function PlayQuiz(p: { quizData: IQuizItem[] }) {
 
   return (
     <Flex direction={"column"} alignItems={"center"} justify={"center"}>
+      {renderProgressBar()}
       <Heading
         fontSize={"2xl"}
         mt={100}
