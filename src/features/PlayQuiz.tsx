@@ -11,8 +11,10 @@ import {
   Text,
   Box,
 } from "@chakra-ui/react";
+
 import valid from "../assets/lottie/valid.json";
 import invalid from "../assets/lottie/invalid.json";
+import TimerProgress from "./Timer";
 
 export default function PlayQuiz(p: { quizData: IQuizItem[] }) {
   const [currentQuizItemIndex, setCurrentQuizItemIndex] = useState<number>(0);
@@ -86,15 +88,28 @@ export default function PlayQuiz(p: { quizData: IQuizItem[] }) {
     </Radio>
   ));
 
+  const failQuestion = () => {
+    setHistory([...history, false]);
+    setQuestionStatus("invalid");
+  };
+
   return (
     <Flex direction={"column"} alignItems={"center"} justify={"center"}>
       {renderProgressBar()}
+
+      {questionStatus === "unanswered" && (
+        <Box position={"absolute"} top={50} right={50}>
+          <TimerProgress max={10} onFinished={failQuestion} />
+        </Box>
+      )}
+
       <Heading
         fontSize={"2xl"}
         mt={100}
         mb={20}
         dangerouslySetInnerHTML={{ __html: currentItem.question }}
       ></Heading>
+
       <RadioGroup
         value={answer}
         onChange={questionStatus === "unanswered" ? setAnswer : undefined}
