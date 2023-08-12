@@ -42,7 +42,9 @@ export default function SetQuestionCategory(p: {
         </SimpleGrid>
       </RadioGroup>
       <Button
-        onClick={() => p.onClickNext(setSelectedCategoryId.toString())}
+        onClick={() => {
+          p.onClickNext(selectedCategoryId.toString());
+        }}
         position={"absolute"}
         top={"80%"}
         right={"10%"}

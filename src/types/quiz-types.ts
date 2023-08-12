@@ -25,3 +25,17 @@ export interface IQuizCategory {
 export interface IFetchQuizCategories {
   trivia_categories: IQuizCategory[];
 }
+
+export interface IFetchQuizResp {
+  response_code: number;
+  results: IQuizItem[];
+}
+
+export interface IQuizItem {
+  category: number;
+  difficulty: QuizDifficulty;
+  type: QuizType;
+  question: string;
+  correct_answer: string;
+  incorrect_answers: string[];
+}

@@ -6,7 +6,13 @@ import "../index.css";
 import SetQuestionQty from "./features/SetQuestionQty";
 import SetQuestionCategory from "./features/SetQuestionCategory";
 import SetQuestionDifficulty from "./features/SetQuestionDifficulty";
-import { IFetchQuizParams, QuizDifficulty, QuizType } from "./types/quiz-types";
+import PlayQuiz from "./features/PlayQuiz";
+import {
+  IFetchQuizParams,
+  IQuizItem,
+  QuizDifficulty,
+  QuizType,
+} from "./types/quiz-types";
 import { QuizAPI } from "./api/quiz-api";
 import { IQuizCategory } from "./types/quiz-types";
 
@@ -21,12 +27,14 @@ enum Step {
 function App() {
   const [step, setStep] = useState<Step>(Step.SetQuestionQty);
   const [quizParams, setQuizParams] = useState<IFetchQuizParams>({
-    amount: 0,
+    amount: 101,
     category: "",
     difficulty: QuizDifficulty.Eazy,
     type: QuizType.Multiple,
   });
   const [categories, setCategories] = useState<IQuizCategory[]>([]);
+
+  const [quizData, setQuizData] = useState<IQuizItem[]>([]);
 
   async function fetchCategories() {
     const result = await QuizAPI.fetchCategories();
@@ -73,16 +81,28 @@ function App() {
       case Step.SetQuestionDifficulty:
         return (
           <SetQuestionDifficulty
-            onClickNext={(difficulty: QuizDifficulty) => {
-              setQuizParams({
+            onClickNext={async (difficulty: QuizDifficulty) => {
+              const params = {
                 ...quizParams,
                 difficulty: difficulty,
-              });
-              setStep(Step.Play);
+              };
+
+              setQuizParams(params);
+              const quizResp = await QuizAPI.fetchQuiz(params);
+              if (quizResp.length > 0) {
+                setQuizData(quizResp);
+                setStep(Step.Play);
+              } else {
+                alert(
+                  `Couldn't find ${params.amount} questions for this category`
+                );
+                setStep(Step.SetQuestionQty);
+              }
             }}
           />
         );
-
+      case Step.Play:
+        return <PlayQuiz quizData={quizData} />;
       default:
         return null;
     }
