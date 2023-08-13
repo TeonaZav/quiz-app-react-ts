@@ -4,7 +4,7 @@ import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: "/react-ts-quiz/",
+  base: "/quiz-app-react-ts/",
   plugins: [react()],
   server: {
     port: 3000,
