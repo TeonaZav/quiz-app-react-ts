@@ -16,16 +16,18 @@ import valid from "../assets/lottie/valid.json";
 import invalid from "../assets/lottie/invalid.json";
 import TimerProgress from "./Timer";
 
-export default function PlayQuiz(p: { quizData: IQuizItem[] }) {
+export default function PlayQuiz(p: {
+  quizData: IQuizItem[];
+  onFinished: (history: boolean[]) => void;
+}) {
+  const [answer, setAnswer] = useState<string>();
   const [currentQuizItemIndex, setCurrentQuizItemIndex] = useState<number>(0);
   const currentItem: IQuizItem = p.quizData[currentQuizItemIndex];
-  const [availableAnswers, setAvailableAnswers] = useState<string[]>([]);
   const [history, setHistory] = useState<boolean[]>([]);
-
-  const [answer, setAnswer] = useState<string>();
   const [questionStatus, setQuestionStatus] = useState<
     "valid" | "invalid" | "unanswered"
   >("unanswered");
+  const [availableAnswers, setAvailableAnswers] = useState<string[]>([]);
 
   useEffect(() => {
     setAvailableAnswers(
@@ -47,13 +49,17 @@ export default function PlayQuiz(p: { quizData: IQuizItem[] }) {
     }
   }, [answer]);
 
+  const isValidAnswer = (answer: string): boolean => {
+    return answer === currentItem.correct_answer;
+  };
+
   const renderProgressBar = () => {
     return (
       <HStack>
-        {p.quizData.map((item, i) => {
+        {p.quizData.map((_, i) => {
           return (
             <Box
-              key={i}
+              key={`${i}/${p.quizData[i].id}`}
               h={3}
               w={25}
               backgroundColor={
@@ -70,9 +76,6 @@ export default function PlayQuiz(p: { quizData: IQuizItem[] }) {
     );
   };
 
-  const isValidAnswer = (answer: string): boolean => {
-    return answer === currentItem.correct_answer;
-  };
   const radioList = availableAnswers.map((availableAnswer: string) => (
     <Radio key={availableAnswer} value={availableAnswer}>
       <Text
@@ -129,8 +132,12 @@ export default function PlayQuiz(p: { quizData: IQuizItem[] }) {
             : invalid
         }
         onComplete={() => {
-          setQuestionStatus("unanswered");
-          setCurrentQuizItemIndex(currentQuizItemIndex + 1);
+          if (currentQuizItemIndex < p.quizData.length - 1) {
+            setCurrentQuizItemIndex(currentQuizItemIndex + 1);
+            setQuestionStatus("unanswered");
+          } else {
+            p.onFinished(history);
+          }
         }}
       />
     </Flex>

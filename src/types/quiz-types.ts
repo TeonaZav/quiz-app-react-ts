@@ -32,6 +32,7 @@ export interface IFetchQuizResp {
 }
 
 export interface IQuizItem {
+  id: number;
   category: number;
   difficulty: QuizDifficulty;
   type: QuizType;

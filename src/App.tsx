@@ -7,6 +7,7 @@ import SetQuestionQty from "./features/SetQuestionQty";
 import SetQuestionCategory from "./features/SetQuestionCategory";
 import SetQuestionDifficulty from "./features/SetQuestionDifficulty";
 import PlayQuiz from "./features/PlayQuiz";
+import Score from "./features/Score";
 import {
   IFetchQuizParams,
   IQuizItem,
@@ -17,6 +18,7 @@ import { QuizAPI } from "./api/quiz-api";
 import { IQuizCategory } from "./types/quiz-types";
 
 enum Step {
+  Loading,
   SetQuestionQty,
   SetQuestionCategory,
   SetQuestionDifficulty,
@@ -25,57 +27,71 @@ enum Step {
 }
 
 function App() {
-  const [step, setStep] = useState<Step>(Step.SetQuestionQty);
+  const [step, setStep] = useState<Step>(Step.Loading);
   const [quizParams, setQuizParams] = useState<IFetchQuizParams>({
-    amount: 101,
+    amount: 0,
     category: "",
-    difficulty: QuizDifficulty.Eazy,
+    difficulty: QuizDifficulty.Mixed,
     type: QuizType.Multiple,
   });
   const [categories, setCategories] = useState<IQuizCategory[]>([]);
-
   const [quizData, setQuizData] = useState<IQuizItem[]>([]);
-
-  async function fetchCategories() {
-    const result = await QuizAPI.fetchCategories();
-    setCategories([{ id: -1, name: "Mixed" }, ...result]);
-  }
+  const [history, setHistory] = useState<boolean[]>([]);
 
   useEffect(() => {
-    fetchCategories();
+    (async () => {
+      setCategories([
+        { id: -1, name: "Mixed" },
+        ...(await QuizAPI.fetchCategories()),
+      ]);
+      setStep(Step.SetQuestionQty);
+    })();
   }, []);
 
   const header = (
     <Flex justify="center">
-      <Image h="24" src={logoImg}></Image>
+      <Image h="24" src={logoImg} />
     </Flex>
   );
   const renderScreenByStep = () => {
     switch (step) {
+      case Step.Loading:
+        return (
+          <Flex
+            top={0}
+            justify="center"
+            alignItems="center"
+            position="absolute"
+            minHeight={"100vh"}
+            w={"100%"}
+          >
+            Loading...
+          </Flex>
+        );
       case Step.SetQuestionQty:
         return (
           <SetQuestionQty
             onClickNext={(amount: number) => {
-              setQuizParams({ ...quizParams, amount: amount });
+              setQuizParams({ ...quizParams, amount });
               setStep(Step.SetQuestionCategory);
             }}
+            defaultValue={10}
             max={30}
             min={5}
             step={5}
-            defaultValue={10}
           />
         );
       case Step.SetQuestionCategory:
         return (
           <SetQuestionCategory
-            onClickNext={(category: string) => {
+            categories={categories}
+            onClickNext={async (categoryId: string) => {
               setQuizParams({
                 ...quizParams,
-                category: category === "-1" ? "" : category,
+                category: categoryId == "-1" ? "" : categoryId,
               });
               setStep(Step.SetQuestionDifficulty);
             }}
-            categories={categories}
           />
         );
       case Step.SetQuestionDifficulty:
@@ -84,9 +100,8 @@ function App() {
             onClickNext={async (difficulty: QuizDifficulty) => {
               const params = {
                 ...quizParams,
-                difficulty: difficulty,
+                difficulty,
               };
-
               setQuizParams(params);
               const quizResp = await QuizAPI.fetchQuiz(params);
               if (quizResp.length > 0) {
@@ -94,7 +109,7 @@ function App() {
                 setStep(Step.Play);
               } else {
                 alert(
-                  `Couldn't find ${params.amount} questions for this category`
+                  `Couldn't find ${params.amount} questions for this category, restarting game`
                 );
                 setStep(Step.SetQuestionQty);
               }
@@ -102,12 +117,29 @@ function App() {
           />
         );
       case Step.Play:
-        return <PlayQuiz quizData={quizData} />;
+        return (
+          <PlayQuiz
+            onFinished={(history_: boolean[]) => {
+              setHistory(history_);
+              setStep(Step.Score);
+            }}
+            quizData={quizData}
+          />
+        );
+
+      case Step.Score:
+        return (
+          <Score
+            history={history}
+            onClickNext={() => {
+              setStep(Step.SetQuestionQty);
+            }}
+          />
+        );
       default:
         return null;
     }
   };
-
   return (
     <Box py={"10"} h="100%">
       {header}
